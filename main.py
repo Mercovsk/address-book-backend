@@ -40,3 +40,12 @@ def read_records(session: Session = Depends(get_session)):
     statement = select(Record)
     records = session.exec(statement).all()
     return records
+
+@app.get("/records/{record_id}", response_model=Record, status_code=status.HTTP_200_OK)
+def read_record(record_id: int, session: Session = Depends(get_session)):
+    record = session.get(Record, record_id)
+
+    if not record:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Record with ID {record_id} not found")
+    
+    return record
