@@ -74,7 +74,7 @@ def create_record(record_data: RecordCreateUpdate, session: Session = Depends(ge
         return db_record
     except Exception as e:
         logger.error(f"Failed to store record to database: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal database storage error")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal database storage error: {str(e)}")
     
 @app.get("/records/", response_model=list[Record], status_code=status.HTTP_200_OK)
 def read_records(
@@ -113,7 +113,7 @@ def update_record(record_data: RecordCreateUpdate, record_id: int, session: Sess
         return record
     except Exception as e:
         logger.error(f"Failed to update record to database: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal database storage error")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal database storage error: {str(e)}")
     
 @app.patch("/records/{record_id}", response_model=Record, status_code=status.HTTP_200_OK)
 def patch_record(record_data: RecordPatch, record_id: int, session: Session = Depends(get_session)):
@@ -133,7 +133,7 @@ def patch_record(record_data: RecordPatch, record_id: int, session: Session = De
         return record
     except Exception as e:
         logger.error(f"Failed to update record to database: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal database storage error")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal database storage error: {str(e)}")
     
 @app.delete("/records/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_record(record_id: int, session: Session = Depends(get_session)):
