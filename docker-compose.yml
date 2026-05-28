@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  server:
+    build: .
+    container_name: book_address_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - sqlite_data:/app
+    restart: unless-stopped
+
+volumes:
+  sqlite_data:
