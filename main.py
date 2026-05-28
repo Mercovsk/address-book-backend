@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from sqlmodel import select
 
 from database import get_session, init_db, Session
-from models import Record
+from models import Record, RecordCreateUpdate
 
 from contextlib import asynccontextmanager
 import logging
@@ -22,7 +22,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 @app.post("/records/", response_model=Record, status_code=status.HTTP_201_CREATED)
-def create_record(record_data: Record, session: Session = Depends(get_session)):
+def create_record(record_data: RecordCreateUpdate, session: Session = Depends(get_session)):
     logger.info(f"Beginning validation and parsing for payload: {record_data.model_dump()}")
 
     try:
@@ -49,3 +49,23 @@ def read_record(record_id: int, session: Session = Depends(get_session)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Record with ID {record_id} not found")
     
     return record
+
+@app.put("/records/{record_id}", response_model=Record, status_code=status.HTTP_200_OK)
+def update_record(record_data: RecordCreateUpdate, record_id: int, session: Session = Depends(get_session)):
+    record = session.get(Record, record_id)
+
+    if not record:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Record with ID {record_id} not found")
+    
+    logger.info(f"Beginning strict validation and parsing to update record {record.model_dump()} into payload {record_data.model_dump()}")
+
+    try:
+        update_data = record_data.model_dump() # return a dictionary representation of the model
+        record.sqlmodel_update(update_data) # update the fields from update_record into record
+        session.add(record)
+        session.commit()
+        session.refresh(record)
+        return record
+    except Exception as e:
+        logger.error(f"Failed to update record to database: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal database storage error")
