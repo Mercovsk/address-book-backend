@@ -77,8 +77,12 @@ def create_record(record_data: RecordCreateUpdate, session: Session = Depends(ge
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal database storage error")
     
 @app.get("/records/", response_model=list[Record], status_code=status.HTTP_200_OK)
-def read_records(session: Session = Depends(get_session)):
-    statement = select(Record)
+def read_records(
+    offset: int = Query(default=10, ge=0),
+    limit: int = Query(default=10, ge=1, le=100),
+    session: Session = Depends(get_session)
+):
+    statement = select(Record).offset(offset).limit(limit)
     records = session.exec(statement).all()
     return records
 
