@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException, status
+from sqlmodel import select
 
 from database import get_session, init_db, Session
 from models import Record
@@ -33,3 +34,9 @@ def create_record(record_data: Record, session: Session = Depends(get_session)):
     except Exception as e:
         logger.error(f"Failed to store record to database: {str(e)}", exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal database storage error")
+    
+@app.get("/records/", response_model=list[Record], status_code=status.HTTP_200_OK)
+def read_records(session: Session = Depends(get_session)):
+    statement = select(Record)
+    records = session.exec(statement).all()
+    return records
