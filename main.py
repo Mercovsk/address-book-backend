@@ -89,3 +89,17 @@ def patch_record(record_data: RecordPatch, record_id: int, session: Session = De
     except Exception as e:
         logger.error(f"Failed to update record to database: {str(e)}", exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal database storage error")
+    
+@app.delete("/records/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_record(record_id: int, session: Session = Depends(get_session)):
+    record = session.get(Record, record_id)
+
+    if not record:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Record with ID {record_id} not found")
+    
+    session.delete(record) # Prepare the Record instance to be deleted in the database
+    session.commit()
+    
+    logger.info(f"Record {record.model_dump()} deleted")
+
+    return None
