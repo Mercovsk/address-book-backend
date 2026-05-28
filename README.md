@@ -30,3 +30,7 @@ docker compose up -d
 
 ### 3. Open the API Documentation
 Visit: http://localhost:8000/docs
+
+### 4. Test the API
+Run the command below to try my test cases
+docker exec -it book_address_api python -m pytest -v
